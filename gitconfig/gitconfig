@@ -1,0 +1,180 @@
+# enable color when possible
+[color]
+	ui = auto
+
+# Add some color for grep output.
+[color "grep"]
+	filename = magenta
+	linenumber = green
+	match = bold red
+
+# Bold the upstream branch name in `git branch -vv`
+[color "branch"]
+	upstream = bold blue
+
+# add some short cuts... most of them familiar to those of us coming from
+# other VCSes.
+[alias]
+	co = checkout
+	st = status -sb
+	ru = reset --hard @{u}
+	k = !gitk --date-order
+	fpr = fetch-pull-request
+
+	# Tell me the first tag that contains this commit.
+	contains = describe --contains
+
+	# A quick way to squash changes into the previous commit using
+	# the same log message
+	amend = commit --amend --no-edit
+
+	# A handy graph-based log view
+	lol = log --abbrev-commit --graph --decorate
+
+	lm = log --decorate master..
+	mm = missing master
+
+	# Fast-forward pull
+	ff = !sh -c 'git merge --ff --ff-only ${1:-@\\{u\\}}' -
+
+	# Fetch all branches
+	fa = fetch --all
+
+	# Fetch all tags
+	ft = fetch --tags
+
+	# Show the type of the object
+	type = cat-file -t
+
+	# Pretty print the object
+	dump = cat-file -p
+
+	# show difference between the HEAD and the index
+	staged = diff --cached
+
+	# show difference between working tree and the index
+	unstaged = diff
+
+	# show staged and unstaged changes (what would be committed with "git commit -a")
+	both = diff HEAD
+
+	# Show all files that are being ignored
+	ignored = ls-files --others -i --exclude-standard
+
+	# Have info show the remote urls
+	info = !git config --get-regex 'remote\\.[^.]+\\.(push)?url' | sort | xargs -n2 printf '%25s   %s\n'
+
+	# diffstat output, without the pager
+	diffstat = !git --no-pager diff --stat -r
+
+	# Prune all stale remote branches from the local repository
+	prune-all = !git remote | xargs -n 1 git remote prune
+
+	# Provide ack-like output for git grep
+	ack = grep --break --heading -n
+
+	# Taken from man git-config... shows all new commits introduced
+	# since the last pull
+	new = !gitk --all --not ORIG_HEAD
+
+	# Handy alias to show all relevant tips.  Using this like:
+	#     git tips origin/pu ^origin/next | git oneline
+	#
+	# would show all branches in pu that are not in next.
+	# Thanks to Jon Seymour for posting this on the git list.
+	tips = "!_() { t=$(git rev-list --no-merges --max-count=1 \"$@\"); if test -n \"$t\"; then echo $t; _ \"$@\" ^$t; fi; }; _"
+	oneline = !xargs -L1 git log --decorate --max-count=1 --oneline
+
+	# Lists all the defined aliases
+	# Taken from https://git.wiki.kernel.org/index.php/Aliases#alias
+	aliases = !git config --get-regexp 'alias.*' | colrm 1 6 | sed 's/[ ]/ = /'
+
+	# Taken from https://git.wiki.kernel.org/index.php/Aliases#Finding_the_right_commit
+
+	# Getting pretty logs.
+	lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --date=relative
+
+	# If you use shortened hashes, sometimes you may encounter a
+	# collision. The following alias prints out all commits whose
+	# hash start with given string.
+	abbr = "!sh -c 'git rev-list --all | grep ^$1 | while read commit; do git --no-pager log -n1 --pretty=format:\"%H %ci %an %s%n\" $commit; done' -"
+
+	# Helpful aliases for fixing up and squashing commits from Jacob
+	# Helwig's blog post:
+	#   <http://technosorcery.net/blog/2012/08/05/updated-git-rebase-interactive-autosquash-commit-preparation/>
+	# Needs Git 1.7.4 or greater.
+	fixup = !sh -c 'git commit --fixup=$1' -
+	squash = !sh -c 'git commit --squash=$1' -
+	ri = rebase --interactive --autosquash
+
+	# Helper to set origin (for instance, when I clone a repo, and then
+	# decide to fork it).
+	set-origin = !sh -c 'git remote rename origin upstream && git remote add origin $1 && git fetch origin && git config branch.master.pushremote origin' -
+
+[core]
+	# make central area for git ignores. copy gitignores and change this to
+	#   excludesfile = ~/.gitignores
+	# if you need to customize it
+	excludesfile = ~/projects/etc/gitconfig/gitignores
+
+	whitespace = cr-at-eol,space-before-tab,trailing-space,tabwidth=8
+
+	# This enables parallel index operations and can help when running
+	# git on network drives or Windows.
+	preloadindex = true
+
+[diff]
+	# Does rename detection during diff operation
+	renames = copies
+	renamelimit = 3000
+
+	# Use patience diff as the default.  The diffs produced are easier to
+	# read and have less conflicts--for the most part.
+	algorithm = patience
+
+	# Use mnemonic prefixes (i, w, c, and o for index, worktree, commit and
+	# object) instead of a/ and b/.
+	mnemonicprefix = true
+
+[diff "cpp"]
+	# Use a funcname that copes better with return type being on a
+	# separate line than the function name.  This will match anything
+	# that looks like a function in column 1.  It seems like a good
+	# trade-off though.
+	xfuncname = "!^[ \t]*[A-Za-z_][A-Za-z_0-9]*:.*$\n"\
+"^(([A-Za-z_][A-Za-z_0-9]*([ \t*]+)?[A-Za-z_][A-Za-z_0-9]*([ \t]*::[ \t]*[^[:space:]]+)?){1,}[ \t]*\\([^;]*)$\n"\
+"^((typedef|struct|class|enum)[^;]*)$"
+
+[push]
+	default = current
+	followTags = true
+
+[rerere]
+	enabled = 1
+
+[merge]
+	ff = false
+
+[sendemail]
+	# Don't thread all the patches into a single topic.  Make each patch its
+	# own topic.
+	chainreplyto = false
+
+[tig]
+	line-graphics = utf-8
+	main-view-date = relative
+	main-view-commit-title = graph:v2,refs:true
+
+[transfer]
+	fsckObjects = true
+
+[pager]
+	diff = diff-highlight | less
+	show = diff-highlight | less
+	log = diff-highlight | less
+
+# You might need the below, if you regularly work against HTTPS servers that
+# don't validate because of missing CA certs.  It's always better to fix that
+# problem, but let's face it, it doesn't always happen.
+#[http]
+#	sslVerify = false

@@ -1,0 +1,120 @@
+# Many of these were taken from:
+#    https://github.com/github/gitignore
+
+# It's better to unpack these files and commit the raw source because
+# git has its own built in compression methods.
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.tar.gz
+*.zip
+*.bzip
+
+# Don't ignore the zip file created by Keynote
+!*.key/*.zip
+
+# Ignore svn stuff
+/.svn/*
+*/.svn/*
+
+# Ignore CVS
+/CVS/*
+*/CVS/*
+.cvsignore
+*/.cvsignore
+
+.*
+!.git[a-z]*
+tags
+TAGS
+tar-me.sh
+
+# KDE
+.directory
+
+# Mac OS X related
+.DS_Store?
+Icon?
+*.dSYM
+
+# Thumbnails
+._*
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# TextMate
+*.tmproj
+*.tmproject
+tmtags
+
+# Windows image file caches
+Thumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Eclipse
+*.pydevproject
+.project
+.metadata
+bin/**
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.classpath
+.settings/
+.loadpath
+*.class
+junitvmwatcher*.properties
+
+# CDT-specific
+.cproject
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+.elc
+auto-save-list
+tramp
+
+# Vim
+.*.sw?
+.sw?
+
+# Object files
+*.o
+*.obj
+
+# Libs
+*.lib
+*.so
+*.dll
+*.a
+
+# Python
+*.py[cod]
+*.egg-info
+__pycache__
+
+# Chef
+.chef/
+!.chef/knife.rb
+
+# IntelliJ
+.idea
+*.iml
+
+# VSCode
+.vscode/

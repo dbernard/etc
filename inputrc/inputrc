@@ -1,0 +1,33 @@
+$include /etc/inputrc
+
+# Link this to ~/.inputrc in your home folder
+"\e[A": history-search-backward
+"\eOA": history-search-backward
+"\e[B": history-search-forward
+"\eOB": history-search-forward
+"\e[3~": delete-char
+"\e[5C": forward-word
+"\e[5D": backward-word
+"\e[1~": beginning-of-line
+"\e[4~": end-of-line
+"\e[5~": beginning-of-history
+"\e[6~": end-of-history
+
+# Other potential entries for Ctrl-Left/Right
+"\e[1;5C": forward-word
+"\e[1;5D": backward-word
+"\e[5C":   forward-word
+"\e[5D":   backward-word
+"\e\e[C":  forward-word
+"\e\e[D":  backward-word
+
+set show-all-if-ambiguous on
+set completion-query-items 1000
+set expand-tilde off
+
+# There's no /etc/inputrc on the Mac
+"\C-x\C-r": re-read-init-file
+
+$if Bash
+	"\C-o\C-o": "\C-e | less\n"
+$endif

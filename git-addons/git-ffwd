@@ -1,0 +1,186 @@
+#!/bin/bash
+SUBDIRECTORY_OK=1 source "$(git --exec-path)/git-sh-setup" ||
+    die "Not a git repository."
+
+verbose=t
+
+while [ "$#" -gt 0 ]
+do
+    key="$1"
+
+    case $key in
+        --color=always)
+            color=t
+            shift
+            ;;
+        -q|--quiet)
+            verbose=
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+# Color handling taken from test-lib.sh in git.
+[ "$color" == "" ] && [ "x$TERM" != "xdumb" ] && (
+        [ -t 1 ] &&
+        tput bold >/dev/null 2>&1 &&
+        tput setaf 1 >/dev/null 2>&1 &&
+        tput sgr0 >/dev/null 2>&1
+    ) &&
+    color=t
+
+
+if [ -n "$color" ]
+then
+    say_color () {
+        (
+        case "$1" in
+        error)
+            tput bold; tput setaf 1;; # bold red
+        skip)
+            tput setaf 4;; # blue
+        warn)
+            tput setaf 3;; # brown/yellow
+        pass)
+            tput setaf 2;; # green
+        info)
+            tput bold; tput setaf 6;; # bold cyan
+        *)
+            [ -n "$quiet" ] && return;;
+        esac
+        shift
+        printf "%s" "$*"
+        tput sgr0
+        echo
+        )
+    }
+else
+    say_color() {
+        [ -z "$1" ] && [ -n "$quiet" ] && return
+        shift
+        printf "%s\n" "$*"
+    }
+fi
+
+
+say_verbose()
+{
+    [ -n "$verbose" ] && say_color "$@"
+}
+
+
+die()
+{
+    say_color >&2 error "ERROR: $1"
+    exit 1
+}
+
+
+has_matching_push() {
+    # push.default is setup for 'simple', 'current', or 'matching'.
+    case "$(git config --get push.default || echo "matching")" in
+        current | simple | matching)
+            return 0
+    esac
+
+    return 1
+}
+
+
+if has_matching_push; then
+    MATCHING_PUSH=t
+else
+    MATCHING_PUSH=
+fi
+
+
+determine_upstream_branch() {
+    local ref="${1#refs/heads/}"
+    local upstream="$(git for-each-ref --format='%(upstream:short)' "refs/heads/$ref")"
+    local publish_branch
+
+    if [ -n "$upstream" ]; then
+        echo "$upstream"
+        return 0
+    fi
+
+    if [ -z "$MATCHING_PUSH" ]; then
+        return 1
+    fi
+
+    # Use the push location as the upstream.
+    local remote=$(git config --get branch.${ref}.pushremote ||
+        git config --get remote.pushdefault ||
+        git config --get branch.${ref}.remote)
+    if [ -z "$remote" -a -n "$(git config --get remote.origin.url 2> /dev/null)" ]; then
+        remote="origin"
+    fi
+    if [ -n "$remote" ]; then
+        git rev-parse "$remote/$ref" > /dev/null 2>&1 &&
+            publish_branch="$remote/$ref"
+    fi
+
+    if [ -n "$publish_branch" ]; then
+        echo "$publish_branch"
+        return 0
+    fi
+
+    return 1
+}
+
+
+# Taken from http://stackoverflow.com/questions/620650/can-i-easily-update-all-local-git-branches-from-remote-branches-simultaneously/answer-9076361
+# with a small tweak by me to make the fast-forward merge use --ff-only, and to
+# help prune remote branches.  It has also been updated to treat the push branch
+# as the default upstream, if no upstream is configured.
+main() {
+    local upstream
+    local ALR
+    local LR
+    local REMOTES
+
+    local CLB=$(git branch -l|awk '/^\*/{print $2}')
+
+    if [ "--no-remote" != "$1" ]; then
+        REMOTES="$@"
+        if [ -z "$REMOTES" ]; then
+            REMOTES="$(git remote)"
+        fi
+        REMOTES="$(echo "$REMOTES" | xargs -n1 echo)"
+
+        if [ -n "$verbose" ]
+        then
+            git remote update -p $REMOTES
+        else
+            git remote update -p $REMOTES 2>&1 >/dev/null
+        fi
+    fi
+
+    git show-ref --heads | cut -d ' ' -f 2 | while read ALB; do
+        LB="${ALB#refs/heads/}"
+        RB="$(determine_upstream_branch "${LB}")"
+        if [ -z "${RB}" ]; then
+            continue
+        fi
+
+        NBEHIND=$(( $(git rev-list --count $LB..$RB 2>/dev/null) +0))
+        NAHEAD=$(( $(git rev-list --count $RB..$LB 2>/dev/null) +0))
+
+        if [ "$NBEHIND" -gt 0 ]; then
+            if [ "$NAHEAD" -gt 0 ]; then
+                say_verbose warn " branch $LB is $NBEHIND commit(s) behind and $NAHEAD commit(s) ahead of $RB. could not be fast-forwarded"
+            elif [ "$LB" = "$CLB" ]; then
+                say_verbose pass " branch $LB was $NBEHIND commit(s) behind $RB. fast-forward merge";
+                git merge ${verbose:+-q} --ff --ff-only -q $RB
+            else
+                say_verbose pass " branch $LB was $NBEHIND commit(s) behind $RB. resetting local branch to remote"
+                git branch ${verbose:+-q} -l -f $LB -t $RB >/dev/null
+            fi
+        fi
+    done
+}
+
+main $@

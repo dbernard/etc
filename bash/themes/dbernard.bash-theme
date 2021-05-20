@@ -1,0 +1,6 @@
+source "${ETC_HOME}/shell-common/dbernard-prompt.sh"
+
+# Put part of the prompt in PROMPT_COMMAND, because bash doesn't evaluate
+# escape sequences when returned from functions in PS1
+PROMPT_COMMAND="echo \"\$(_dbernard_prompt \$?)\"; $PROMPT_COMMAND"
+PS1="${DBERNARD_PROMPT_PS1}"

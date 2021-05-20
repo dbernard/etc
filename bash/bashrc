@@ -1,0 +1,87 @@
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc
+fi
+
+ETC_HOME="${ETC_HOME:-$HOME/projects/etc}"
+
+if [ -z "$ETC_USER" ]; then
+    case "$(uname)" in
+        MING*)
+            ETC_USER="$USERNAME"
+            ;;
+        *)
+            ETC_USER="$(whoami)"
+            ;;
+    esac
+fi
+
+# Needed for some color-related bits
+_start_ansi="\["
+_end_ansi="\]"
+
+# A function to help with creating directory aliases and providing
+# completion for them.
+# Taken from here:
+#   http://blog.caioromao.com/2010/10/10/Custom-directory-completion.html
+# Tweaked to work with more than just 'cd'
+function _make_dir_complete()
+{
+    local aliasname=$1
+    local prgname="__s_${aliasname}__"
+
+    cd "$3" >/dev/null 2>&1
+    local dirname=$(pwd -L)
+    local realpath=$(pwd -P)
+    cd - >/dev/null 2>&1
+
+    FUNC="function $prgname()
+    {
+        local cur len wrkdir;
+        local IFS=\$'\\n'
+        wrkdir=\"$realpath\"
+        cur=\${COMP_WORDS[COMP_CWORD]};
+        len=\$((\${#wrkdir} + 2));
+        COMPREPLY=( \$(compgen -S/ -d \$wrkdir/\$cur| cut -b \$len-) );
+    }"
+    ALIAS="$aliasname () { $2 \"$dirname/\$*\"; }"
+
+    eval $FUNC
+    eval $ALIAS
+    complete -o nospace -F $prgname $aliasname
+}
+
+function _find_executable()
+{
+    type -P "$@"
+}
+
+. "$ETC_HOME/shell-common/noninteractive.sh"
+
+case $- in
+    *i*)
+        # In an interactive shell
+        . "$ETC_HOME/shell-common/interactive.sh"
+        . "$ETC_HOME/bash/pickjdk.sh"
+        . "$ETC_HOME/bash/shell-options.sh"
+
+        if ! test -f /usr/local/etc/bash_completion.d/git-completion.bash; then
+            . "$ETC_HOME/bash/git-completion.bash"
+        fi
+
+        # Ensure the prompt is in normal mode.
+        if [ "$platform" != "mingw" ] && tput rmkx > /dev/null 2>&1; then
+            PROMPT_COMMAND="tput rmkx"
+        fi
+
+        source "$ETC_HOME/bash/themes/${BASH_THEME:-dbernard}.bash-theme"
+
+        test -f "$ETC_HOME/user/$ETC_USER/init.sh" &&
+            . "$ETC_HOME/user/$ETC_USER/init.sh"
+
+        test -f "$HOME/.etcrc" && . "$HOME/.etcrc"
+        ;;
+esac
+
+# Make sure the exit code is 0, so that we don't show an error code immediately
+# on the prompt.
+true
