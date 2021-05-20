@@ -1,0 +1,25 @@
+#!/bin/sh
+
+SUBDIRECTORY_OK=1 . "$(git --exec-path)/git-sh-setup" ||
+    die "Not a git repository."
+
+test -t 1 && color=t
+
+if [ -n "$color" ]
+then
+    command -v colordiff > /dev/null || color=
+fi
+
+do_interdiff()
+{
+    git -c color.ui=off show "$1" > "$GIT_DIR/commit1" &&
+        git -c color.ui=off show "$2" > "$GIT_DIR/commit2" &&
+        (
+            interdiff "$GIT_DIR"/commit[12] |
+            (
+                test -n "$color" && { colordiff | diff-highlight ; } || cat -
+            )
+        )
+}
+
+do_interdiff "$@" | git_pager
