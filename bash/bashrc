@@ -2,7 +2,7 @@ if [ -f /etc/bashrc ]; then
     . /etc/bashrc
 fi
 
-ETC_HOME="${ETC_HOME:-$HOME/projects/etc_new}"
+ETC_HOME="${ETC_HOME:-$HOME/projects/etc}"
 
 if [ -z "$ETC_USER" ]; then
     case "$(uname)" in
