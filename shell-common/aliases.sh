@@ -90,3 +90,6 @@ if [[ -s "$HOME/.rvm/scripts/rvm" ]]; then
     alias compass="rvm exec compass"
     alias rake="rvm rake"
 fi
+
+# Neovim alias
+alias nv="nvim"
