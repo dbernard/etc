@@ -93,3 +93,6 @@ fi
 
 # Neovim alias
 alias nv="nvim"
+
+# Codespaces SSH alias
+alias ghcs="gh cs ssh --server-port 2222"
