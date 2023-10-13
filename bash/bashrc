@@ -61,16 +61,10 @@ case $- in
     *i*)
         # In an interactive shell
         . "$ETC_HOME/shell-common/interactive.sh"
-        . "$ETC_HOME/bash/pickjdk.sh"
         . "$ETC_HOME/bash/shell-options.sh"
 
         if ! test -f /usr/local/etc/bash_completion.d/git-completion.bash; then
             . "$ETC_HOME/bash/git-completion.bash"
-        fi
-
-        # Ensure the prompt is in normal mode.
-        if [ "$platform" != "mingw" ] && tput rmkx > /dev/null 2>&1; then
-            PROMPT_COMMAND="tput rmkx"
         fi
 
         source "$ETC_HOME/bash/themes/${BASH_THEME:-dbernard}.bash-theme"
@@ -78,7 +72,6 @@ case $- in
         test -f "$ETC_HOME/user/$ETC_USER/init.sh" &&
             . "$ETC_HOME/user/$ETC_USER/init.sh"
 
-        test -f "$HOME/.etcrc" && . "$HOME/.etcrc"
         ;;
 esac
 
