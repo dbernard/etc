@@ -3,10 +3,10 @@ PATHS_TO_APPEND=
 
 # test -n "$TMUX" && export TERM="screen-256color"
 
-# if [ -x /usr/libexec/path_helper ]; then
-#     PATH=""
-#     eval $(/usr/libexec/path_helper -s)
-# fi
+if [ -x /usr/libexec/path_helper ]; then
+    PATH=""
+    eval $(/usr/libexec/path_helper -s)
+fi
 
 test -d "$HOME/bin" &&
         PATHS_TO_PREPEND=$(append_path "$PATHS_TO_PREPEND" "$HOME/bin")
