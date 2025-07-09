@@ -46,3 +46,6 @@ alias nv="nvim"
 
 # Codespaces SSH alias
 alias ghcs="gh cs ssh --server-port 2222"
+
+# Hack for codespace setup
+alias srcweb="source /workspaces/web/venv/bin/activate && source /workspaces/web/profile && source /workspaces/web/profile-codespaces"
