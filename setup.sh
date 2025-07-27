@@ -49,6 +49,39 @@ _maybeInstall() {
     return 0
 }
 
+_maybeAppend() {
+    local s="$1"
+    local file="$2"
+    local base=$(basename "${file}")
+
+    echo "Checking ${base}..."
+
+    # Check if our source line already exists
+    if test -e "$file" && grep -F -x -q "${s}" "$file"; then
+        echo "$base already configured"
+        return 0
+    fi
+
+    # Create file if it doesn't exist, or append to existing file
+    if test ! -e "$file"; then
+        # File doesn't exist, create it
+        if test -n "$SET_ETC_HOME"; then
+            echo "$SET_ETC_HOME" > "$file"
+        fi
+        echo "$s" >> "$file"
+        echo "Created $base"
+    else
+        # File exists, append our configuration
+        echo "" >> "$file"  # Add blank line for separation
+        if test -n "$SET_ETC_HOME"; then
+            echo "$SET_ETC_HOME" >> "$file"
+        fi
+        echo "$s" >> "$file"
+        echo "Updated $base"
+    fi
+    return 0
+}
+
 _installLink() {
     local name
     name="$(basename "$1")"
@@ -101,4 +134,4 @@ if [ "$(uname)" == "Darwin" ]; then
     fi
 fi
 
-_maybeInstall "source \"$SOURCE_PREFIX/bash/bashrc\"" "$HOME/.bashrc"
+_maybeAppend "source \"$SOURCE_PREFIX/bash/bashrc\"" "$HOME/.bashrc"
