@@ -3,20 +3,13 @@ source "${ETC_HOME}/shell-common/dbernard-prompt.sh"
 # Save any existing PROMPT_COMMAND from organizational configs
 _DBERNARD_SAVED_PROMPT_COMMAND="$PROMPT_COMMAND"
 
-# Our custom prompt function that handles both the display and PS1 restoration
-_dbernard_combined_prompt() {
-    # Always ensure our PS1 is correct (handles org configs that override it)
-    PS1="${DBERNARD_PROMPT_PS1}"
-    
-    # Display our custom prompt line
-    echo "$(_dbernard_prompt $?)"
-    
-    # Execute any saved organizational PROMPT_COMMAND functions
-    if [[ -n "$_DBERNARD_SAVED_PROMPT_COMMAND" ]]; then
-        eval "$_DBERNARD_SAVED_PROMPT_COMMAND"
-    fi
-}
+# Build a static PS1 that includes your prompt info
+# This creates a single-line prompt that gets evaluated each time
+PS1='$(_dbernard_prompt $?)\n'"${DBERNARD_PROMPT_PS1}"
 
-# Set our PROMPT_COMMAND to our combined function
-PROMPT_COMMAND="_dbernard_combined_prompt"
-PS1="${DBERNARD_PROMPT_PS1}"
+# Restore organizational PROMPT_COMMAND if it exists (but don't add our own)
+if [[ -n "$_DBERNARD_SAVED_PROMPT_COMMAND" ]]; then
+    PROMPT_COMMAND="$_DBERNARD_SAVED_PROMPT_COMMAND"
+else
+    unset PROMPT_COMMAND
+fi
