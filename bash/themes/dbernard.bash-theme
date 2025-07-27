@@ -1,5 +1,8 @@
 source "${ETC_HOME}/shell-common/dbernard-prompt.sh"
 
+# Unset the prompt variable if it exists
+unset PROMPT_COMMAND
+
 # Put part of the prompt in PROMPT_COMMAND, because bash doesn't evaluate
 # escape sequences when returned from functions in PS1
 PROMPT_COMMAND="echo \"\$(_dbernard_prompt \$?)\"; $PROMPT_COMMAND"
