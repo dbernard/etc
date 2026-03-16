@@ -57,6 +57,11 @@ function _dbernard_prompt() {
     local host="${HOSTNAME}"
     host="${host:=${HOST}}"
 
+    # If in Codespaces, use CODESPACE_NAME as the host
+    if [ "$CODESPACES" = "true" ]; then
+        host="${CODESPACE_NAME}"
+    fi
+
     if [ -n "$SSH_TTY" ]; then
         # We're remoted
         SRMT="${fg_no_bold_white}{"
