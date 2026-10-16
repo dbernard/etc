@@ -49,3 +49,33 @@ alias ghcs="gh cs ssh --server-port 2222"
 
 # Hack for codespace setup
 alias srcweb="source /workspaces/web/venv/bin/activate && source /workspaces/web/profile && source /workspaces/web/profile-codespaces"
+
+# Open the newest Monday Group Brief in the browser.
+#
+# Re-renders first when viewer/ is missing or older than the newest brief:
+# viewer/ is gitignored (so a fresh clone has none), and the weekly run treats a
+# render failure as non-fatal on purpose — the brief still lands and still posts
+# to Slack — so opening a stale viewer is a normal thing to walk into.
+function brief()
+{
+    local repo="$HOME/projects/staff-eng-brief"
+    local index="$repo/viewer/index.html"
+    local newest
+
+    # Brief filenames are ISO dates, so the last one lexically is the newest.
+    newest="$(ls -1 "$repo"/briefs/*.md 2>/dev/null | tail -1)"
+
+    if [ -z "$newest" ]
+    then
+        echo "brief: no briefs found in $repo/briefs" >&2
+        return 1
+    fi
+
+    if [ ! -f "$index" ] || [ "$newest" -nt "$index" ]
+    then
+        echo "brief: viewer is stale, rendering..." >&2
+        bash "$repo/scripts/render.sh" >&2 || return 1
+    fi
+
+    open "$index"
+}
